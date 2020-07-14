@@ -4,4 +4,39 @@ https://medium.com/swlh/setting-up-elasticsearch-and-kibana-on-google-kubernetes
 
 # steps
 
+# download operator
+
 kubectl apply -f https://download.elastic.co/downloads/eck/1.0.1/all-in-one.yaml
+
+# check for errors
+
+kubectl -n elastic-system logs -f statefulset.apps/elastic-operator
+kubectl get all -n elastic-system
+
+# try a 1 node setup
+
+kubectl apply -f elasticsearch-1-node.yaml
+
+# check for success
+
+kubectl get elasticsearch
+
+# once green check for resources
+
+kubectl get all -n default
+
+# access from localhost with a forward proxy
+
+kubectl port-forward service/quickstart-es-http 9200
+
+# setup a master elastic user with a password and store it in kubernetes secrets
+
+PASSWORD=\$(kubectl get secret quickstart-es-elastic-user -o=jsonpath='{.data.elastic}' | base64 --decode)
+
+# test index
+
+curl -u "elastic:\$PASSWORD" -k "https://localhost:9200/_cat/indices?v"
+
+# simulate real world node loss
+
+kubectl delete pod quickstart-es-default-0
