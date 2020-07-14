@@ -71,10 +71,23 @@ https://35.188.203.27:5601/
 
 # get password from kube
 
-PASSWORD=$(kubectl get secret entro-elastic-es-elastic-user -o=jsonpath='{.data.elastic}' | base64 --decode)
-echo $PASSWORD
+PW=$(kubectl get secret entro-elastic-es-elastic-user -o=jsonpath='{.data.elastic}' | base64 --decode)
+echo $PW
 
 # entro-prod
 
 kubectl apply -f entro-elastic.yaml
 kubectl apply -f entro-kibana.yaml
+
+# get cert
+
+kubectl get secret | grep es-http
+
+kubectl get secret entro-elastic-es-http-certs-public -o go-template='{{index .data "tls.crt" | base64decode }}'
+
+NAME=entro-elastic
+
+kubectl get secret "$NAME-es-http-certs-public" -o go-template='{{index .data "tls.crt" | base64decode }}' > tls.crt
+PW=$(kubectl get secret "\$NAME-es-elastic-user" -o go-template='{{.data.elastic | base64decode }}')
+
+curl --cacert tls.crt -u elastic:$PW https://$NAME-es-http:9200/

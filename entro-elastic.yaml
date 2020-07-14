@@ -4,6 +4,13 @@ metadata:
   name: entro-elastic
 spec:
   version: 7.6.2
+  http:
+    service:
+      spec:
+        type: LoadBalancer
+    tls:
+      selfSignedCertificate:
+        disabled: true
   nodeSets:
     - name: default
       count: 2
