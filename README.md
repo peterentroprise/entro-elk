@@ -35,8 +35,46 @@ PASSWORD=\$(kubectl get secret quickstart-es-elastic-user -o=jsonpath='{.data.el
 
 # test index
 
+curl -u "elastic:\$PASSWORD" -k "https://localhost:9200"
+
 curl -u "elastic:\$PASSWORD" -k "https://localhost:9200/_cat/indices?v"
 
 # simulate real world node loss
 
 kubectl delete pod quickstart-es-default-0
+
+# scale to 2 nodes
+
+kubectl apply -f elasticsearch-2-nodes.yaml
+
+kubectl get elasticsearch
+
+# delete old elastic to setup new one with vol
+
+kubectl delete elasticsearch quickstart
+
+# check PVC
+
+kubectl describe pvc
+
+# checks elastic
+
+kubectl get elasticsearch
+
+# setup kibana
+
+kubectl apply -f kibana.yaml
+
+# access kibana
+
+https://35.188.203.27:5601/
+
+# get password from kube
+
+PASSWORD=$(kubectl get secret entro-elastic-es-elastic-user -o=jsonpath='{.data.elastic}' | base64 --decode)
+echo $PASSWORD
+
+# entro-prod
+
+kubectl apply -f entro-elastic.yaml
+kubectl apply -f entro-kibana.yaml
